@@ -1,0 +1,773 @@
+---
+title: "Steam game metacritic score prediction"
+output: html_notebook
+---
+
+## Data cleaning
+
+**First import and trim the data and see the overall status of data.** 
+
+```{r}
+game <- read.csv("games-features-edit.csv", header = TRUE, stringsAsFactors = TRUE)
+
+game1 <- game[c(-1, -2)]
+
+game1[3:16][game1[3:16] == TRUE] <-"TRUE"
+game1[3:16][game1[3:16] == FALSE] <-"FALSE"
+
+game1$IsFree<-as.factor(game1$IsFree)
+game1$GenreIsNonGame<-as.factor(game1$GenreIsNonGame)
+game1$GenreIsIndie<-as.factor(game1$GenreIsIndie)
+game1$GenreIsAction<-as.factor(game1$GenreIsAction)
+game1$GenreIsAdventure<-as.factor(game1$GenreIsAdventure)
+game1$GenreIsCasual<-as.factor(game1$GenreIsCasual)
+game1$GenreIsStrategy<-as.factor(game1$GenreIsStrategy)
+game1$GenreIsRPG<-as.factor(game1$GenreIsRPG)
+game1$GenreIsSimulation<-as.factor(game1$GenreIsSimulation)
+game1$GenreIsEarlyAccess<-as.factor(game1$GenreIsEarlyAccess)
+game1$GenreIsFreeToPlay<-as.factor(game1$GenreIsFreeToPlay)
+game1$GenreIsSports<-as.factor(game1$GenreIsSports)
+game1$GenreIsRacing<-as.factor(game1$GenreIsRacing)
+game1$GenreIsMassivelyMultiplayer<-as.factor(game1$GenreIsMassivelyMultiplayer)
+
+```
+
+```{r}
+str(game1)
+summary(game1)
+length(which(game1$Metacritic == 0))/length(game1$Metacritic)
+```
+3 numerical value and 16 categorical value
+There is no missing value however, Metratic score is heavily skew to 0 score(82% of data)
+
+```{r}
+
+game2 <- game1
+game2$Metacritic<-replace(game2$Metacritic, game2$Metacritic == 0, NA)
+
+game2<-game2[complete.cases(game2), ]
+
+hist(game$Metacritic, xlab = "Metacritic Score", ylab = "occurance")
+
+hist(game2$Metacritic, xlab = "Metacritic Score", ylab = "occurance")
+```
+
+remove the "Response name", and "release date" from the table since those are unique values for each row.
+
+without removing "0", histogram seriously skewed to right with huge number of 0 
+
+With removing data with 0 Metacritic score graph displays slightly left skew
+
+
+
+
+**Now it is time to explore the data against "Metacritic"(Metacritic score) **
+
+```{r}
+attach(game1)
+
+plot(x=Metacritic, y=RecommendationCount)
+cor(Metacritic, RecommendationCount)
+
+plot(Metacritic~IsFree)
+t.test(Metacritic~IsFree, alternative = "two.sided")
+
+plot(Metacritic~GenreIsNonGame)
+t.test(Metacritic~GenreIsNonGame, alternative = "two.sided")
+
+plot(Metacritic~GenreIsIndie)
+t.test(Metacritic~GenreIsIndie, alternative = "two.sided")
+
+plot(Metacritic~GenreIsAction)
+t.test(Metacritic~GenreIsAction, alternative = "two.sided")
+
+plot(Metacritic~GenreIsAdventure)
+t.test(Metacritic~GenreIsAdventure, alternative = "two.sided")
+
+plot(Metacritic~GenreIsCasual)
+t.test(Metacritic~GenreIsCasual, alternative = "two.sided")
+
+plot(Metacritic~GenreIsStrategy)
+t.test(Metacritic~GenreIsStrategy, alternative = "two.sided")
+
+plot(Metacritic~GenreIsRPG)
+t.test(Metacritic~GenreIsRPG, alternative = "two.sided")
+
+plot(Metacritic~GenreIsSimulation)
+t.test(Metacritic~GenreIsSimulation, alternative = "two.sided")
+
+plot(Metacritic~GenreIsEarlyAccess)
+t.test(Metacritic~GenreIsEarlyAccess, alternative = "two.sided")
+
+plot(Metacritic~GenreIsFreeToPlay)
+t.test(Metacritic~GenreIsFreeToPlay, alternative = "two.sided")
+
+plot(Metacritic~GenreIsSports)
+t.test(Metacritic~GenreIsSports, alternative = "two.sided")
+
+plot(Metacritic~GenreIsRacing)
+t.test(Metacritic~GenreIsRacing, alternative = "two.sided")
+
+plot(Metacritic~GenreIsMassivelyMultiplayer)
+t.test(Metacritic~GenreIsMassivelyMultiplayer, alternative = "two.sided")
+
+plot(x=Metacritic, y=PriceInitial)
+cor(Metacritic, PriceInitial)
+
+```
+
+**Metracritic by RecommendationCount**  weak relationhship, correlation 0.1184653 
+
+**Metracritic by IsFree** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsNoneGame** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsIndie** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsAction** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsAdventure** has p value >0.05, cannot conclude there is difference between mean
+
+**Metracritic by GeneralsCasual** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsStragy** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsRPG** has p value <0.05, there is relation between mean 
+
+**Metracritic by GeneralsSimulatioin** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsEarlyAccess** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsFreeToPlay** has p value <0.05, there is relation between mean 
+
+**Metracritic by GeneralsSports** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsRacing** has p value >0.05, cannot conclude there is difference between mean  
+
+**Metracritic by GeneralsMassivlyMultiplayer** has p value >0.05, cannot conclude there is difference between mean 
+
+**Metracritic by PriceInitial** weak relationhship, correlation 0.1880414
+
+
+**remove the variables which have weak to no relationship**
+
+```{r}
+game3<- game1[c(-2,-7,-15,-16,-17)]
+```
+
+**divide the dataset to train and test sets**
+
+```{r}
+library(caret)
+in_train<-createDataPartition(game3$Metacritic, p = 0.80, list = FALSE)
+
+game_train <- game3[in_train,]
+game_test <- game3[-in_train,]
+
+
+```
+
+## Processing data 
+
+**1. linear regression**
+
+**simple linear**
+
+```{r}
+
+library(caret)
+set.seed(1)
+
+model<-train(Metacritic~.,data = game_train, method =
+"lm",trControl = trainControl(method = "cv", number = 10))
+
+prediction<-predict(model, game_test)
+RMSE(prediction, game_test$Metacritic)
+
+```
+
+
+**lasso**
+
+```{r}
+
+library(RANN)
+set.seed(1)
+lasso<-train(Metacritic~.,data= game_train, method = "glmnet", trControl = trainControl("cv", number = 10), tuneGrid = expand.grid(alpha = 1, lambda = 10^seq(-3, 3, length = 100)))
+
+predictions <- predict(lasso,game_test)
+RMSE(predictions, game_test$Metacritic)
+
+
+```
+
+```{r}
+coef(lasso$finalModel, lasso$bestTune$lambda)
+```
+
+**ridge**
+
+```{r}
+
+set.seed(1)
+ridge<-train(Metacritic~.,data= game_train, method = "glmnet", trControl = trainControl("cv", number = 10), tuneGrid = expand.grid(alpha = 0, lambda = 10^seq(-3, 3, length = 100)))
+
+predictions2<-predict(ridge, game_test)
+RMSE(predictions2, game_test$Metacritic)
+
+```
+**elastic**
+
+```{r}
+
+set.seed(1)
+enet<-train(Metacritic~.,data= game_train, method = "glmnet", trControl = trainControl("cv", number = 10), tuneGrid = expand.grid(alpha = seq(0,1, length=10), lambda = 10^seq(-3, 3, length = 100)))
+
+predictions3<-predict(enet, game_test)
+RMSE(predictions3, game_test$Metacritic)
+
+```
+
+
+**2. Tree method**
+
+
+**stepwise regression**
+
+
+```{r}
+
+set.seed(1)
+library(leaps)
+step.model<-train(Metacritic~.,data = game_train, method = "leapBackward",trControl = trainControl("cv", number = 10), tuneGrid= data.frame(nvmax = 1:11)) 
+
+prediction_s<-predict(step.model, game_test)
+RMSE(prediction_s, game_test$Metacritic)
+
+```
+
+
+```{r}
+
+set.seed(1)
+library(leaps)
+step.model1<-train(Metacritic~.,data = game_train, method = "leapForward",trControl = trainControl("cv", number = 10), tuneGrid= data.frame(nvmax = 1:11)) 
+
+prediction_s<-predict(step.model, game_test)
+RMSE(prediction_s, game_test$Metacritic)
+
+```
+
+
+
+**regression tree**
+
+```{r}
+
+library(rpart)
+m.rpart<-rpart(Metacritic~.,data = game_train)
+p.rpart<-predict(m.rpart, game_test)
+
+RMSE(p.rpart, game_test$Metacritic)
+
+```
+**random forest**
+
+```{r}
+set.seed(1)
+
+m_rf<-train(Metacritic~., data = game_train, method ="rf", metric = "RMSE", importance=T, trControl = trainControl(method="cv", number =10), tuneGrid = expand.grid(mtry=c(2,4,8)))
+
+predictions4<-predict(m_rf, game_test)
+RMSE(predictions4, game_test$Metacritic)
+
+```
+
+
+
+**gradient boosting**
+
+```{r}
+
+set.seed(1)
+gbm<-train(Metacritic~., data = game_train, method ="gbm", metric = "RMSE" ,trControl = trainControl("cv", number = 10))
+
+predictions5<-predict(gbm, game_test)
+RMSE(predictions5, game_test$Metacritic)
+
+```
+
+**svmlinear**
+
+```{r}
+
+set.seed(1)
+svmLiner<-train(Metacritic~., data = game_train, method ="svmLinear",trControl = trainControl("cv", number = 10))
+
+predictions6<-predict(svmLiner, game_test)
+RMSE(predictions6, game_test$Metacritic)
+
+```
+**svmradial**
+
+```{r}
+
+set.seed(1)
+svmRadial<-train(Metacritic~., data = game_train, method ="svmRadial", trControl = trainControl("cv", number = 10))
+
+predictions7<-predict(svmRadial, game_test)
+RMSE(predictions7, game_test$Metacritic)
+
+```
+
+**summary of model so far**
+
+```{r}
+set.seed(1)
+
+resamps<-resamples(list(model, step.model, step.model1,lasso, ridge, enet, m_rf, gbm, svmLiner, svmRadial) )
+
+summary(resamps)
+
+```
+
+
+**Neural network**
+
+```{r}
+game_train_m<-game_train
+
+game_train_m$Metacritic<-(game_train$Metacritic - min(game3$Metacritic))/(max(game3$Metacritic)- min(game3$Metacritic))
+
+val.index<-createDataPartition(game_train$Metacritic, p= 0.9, list=FALSE)
+game_train1<-game_train_m[val.index,]
+game_val<-game_train_m[-val.index,]
+
+
+```
+split the train dataset in to train and validation 
+
+```{r}
+nearZeroVar(game_train1, saveMetrics = TRUE)
+```
+All variables are being used
+
+```{r}
+game_train2<-game_train1
+game_val1<-game_val
+game_test1<-game_test
+
+game_train2[2:12]<-ifelse(game_train2[2:12] == "TRUE",1,0)
+
+game_val1[2:12]<-ifelse(game_val1[2:12] == "TRUE" ,1,0)
+
+game_test1[2:12]<-ifelse(game_test1[2:12] == "TRUE" ,1,0)
+
+```
+
+
+```{r}
+library(keras)
+library(tfruns)
+df_train<-as.matrix(subset(game_train2, select=-c(Metacritic)))
+df_val<-as.matrix(subset(game_val1, select=-c(Metacritic)))
+runs<-tuning_run("game_tuning.R", 
+                 flags =list(
+                   nodes=c(64,128,392),
+            learning_rate=c(0.01,0.05,0.001),
+            batch_size=c(100,200,500,1000),
+            epochs=c(30,50,100),
+            activation=c("relu","sigmoid","tanh"),
+            activation=c("relu","sigmoid","tanh"),
+            drop1=c(0.2,0.4,0.8),
+            drop2=c(0.2,0.4,0.8)),
+            sample =0.02
+       
+)
+```
+
+```{r}
+runs
+view_run(runs$run_dir[1])
+
+```
+```{r}
+total_train<-rbind(game_train2, game_val1)
+total_train1<-as.matrix(subset(total_train, select=-c(Metacritic)))
+df_test<-as.matrix(subset(game_test1, select=-c(Metacritic)))
+
+model2 = keras_model_sequential()
+model2 %>%
+  layer_dense(units = 128, activation = 'relu') %>%
+  layer_dropout(0.4) %>%
+  layer_dense(units = 30, activation = 'relu') %>%
+  layer_dense(0.4) %>%
+  layer_dense(units = 1, activation = 'linear')
+
+model2 %>% compile(optimizer = 'adam', loss = 'mean_squared_error',metrics = c('mae'))
+
+set.seed(1)
+model2 %>% fit(total_train1, (total_train$Metacritic), epochs = 30, batch_size=1000, learning_rate = 0.01)
+```
+```{r}
+game_pred<-model2 %>% predict(df_test)
+
+RMSE(((game_pred*(max(game3$Metacritic)- min(game3$Metacritic)))+min(game3$Metacritic)), game_test1$Metacritic)
+
+```
+
+##Exploring game2 data which removed the score 0 metacritic
+
+```{r}
+summary(game2)
+```
+genre is none game attribute was not tested since Everything is false in "game2"
+```{r}
+attach(game2)
+
+plot(x=Metacritic, y=RecommendationCount)
+cor(Metacritic, RecommendationCount)
+
+plot(Metacritic~IsFree)
+t.test(Metacritic~IsFree, alternative = "two.sided")
+
+plot(Metacritic~GenreIsIndie)
+t.test(Metacritic~GenreIsIndie, alternative = "two.sided")
+
+plot(Metacritic~GenreIsAction)
+t.test(Metacritic~GenreIsAction, alternative = "two.sided")
+
+plot(Metacritic~GenreIsAdventure)
+t.test(Metacritic~GenreIsAdventure, alternative = "two.sided")
+
+plot(Metacritic~GenreIsCasual)
+t.test(Metacritic~GenreIsCasual, alternative = "two.sided")
+
+plot(Metacritic~GenreIsStrategy)
+t.test(Metacritic~GenreIsStrategy, alternative = "two.sided")
+
+plot(Metacritic~GenreIsRPG)
+t.test(Metacritic~GenreIsRPG, alternative = "two.sided")
+
+plot(Metacritic~GenreIsSimulation)
+t.test(Metacritic~GenreIsSimulation, alternative = "two.sided")
+
+plot(Metacritic~GenreIsEarlyAccess)
+t.test(Metacritic~GenreIsEarlyAccess, alternative = "two.sided")
+
+plot(Metacritic~GenreIsFreeToPlay)
+t.test(Metacritic~GenreIsFreeToPlay, alternative = "two.sided")
+
+plot(Metacritic~GenreIsSports)
+t.test(Metacritic~GenreIsSports, alternative = "two.sided")
+
+plot(Metacritic~GenreIsRacing)
+t.test(Metacritic~GenreIsRacing, alternative = "two.sided")
+
+plot(Metacritic~GenreIsMassivelyMultiplayer)
+t.test(Metacritic~GenreIsMassivelyMultiplayer, alternative = "two.sided")
+
+plot(x=Metacritic, y=PriceInitial)
+cor(Metacritic, PriceInitial)
+```
+
+**Metaracritic by RecommendationCount**  weak relationship, correlation 0.1128173 
+
+**Metracritic by IsFree** has p value >0.05, there is relation between mean 
+
+**Metracritic by GeneralsIndie** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsAction** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsAdventure** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsCasual** has p value >0.05, cannot conclude there is difference between mean 
+
+**Metracritic by GeneralsSteragy** has p value >0.05, cannot conclude there is difference between mean 
+
+**Metracritic by GeneralsRPG** has p value <0.05, there is relation between mean 
+
+**Metracritic by GeneralsSimulatioin** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsEarlyAccess** has p value >0.05, cannot conclude there is difference between mean 
+
+**Metracritic by GeneralsFreeToPlay** has p value >0.05, cannot conclude there is difference between mean 
+
+**Metracritic by GeneralsSports** has p value <0.05, there is relation between mean
+
+**Metracritic by GeneralsRacing** has p value >0.05, cannot conclude there is difference between mean  
+
+**Metracritic by GeneralsMassivlyMultiplayer** has p value >0.05, cannot conclude there is difference between mean 
+
+**Metracritic by PriceInitial** weak relationship, correlation 0.120478
+
+
+**remove the variables which have weak to no relationship**
+**also GenreisNone game is also removed since there is no variationi except False**
+
+```{r}
+game2_m<- game2[c(-2,-3,-4,-8,-9,-12,-13,-15,-16,-17)]
+```
+
+
+```{r}
+library(caret)
+in_train<-createDataPartition(game2_m$Metacritic, p = 0.80, list = FALSE)
+
+game2_train <- game2_m[in_train,]
+game2_test <- game2_m[-in_train,]
+
+
+```
+## Processing data 
+
+**1. linear regression**
+
+**simple linear**
+
+```{r}
+
+library(caret)
+set.seed(1)
+
+linear_game2<-train(Metacritic~.,data = game2_train, method =
+"lm",trControl = trainControl(method = "cv", number = 10))
+
+prediction_game2<-predict(linear_game2, game2_test)
+RMSE(prediction_game2, game2_test$Metacritic)
+
+```
+
+
+**lasso**
+
+```{r}
+
+library(RANN)
+set.seed(1)
+lasso_game2<-train(Metacritic~.,data= game2_train, method = "glmnet", trControl = trainControl("cv", number = 10), tuneGrid = expand.grid(alpha = 1, lambda = 10^seq(-3, 3, length = 100)))
+
+predictions_game2 <- predict(lasso_game2,game2_test)
+RMSE(predictions_game2, game2_test$Metacritic)
+
+
+```
+
+```{r}
+coef(lasso_game2$finalModel, lasso_game2$bestTune$lambda)
+```
+
+**ridge**
+
+```{r}
+
+set.seed(1)
+ridge_game2<-train(Metacritic~.,data= game2_train, method = "glmnet", trControl = trainControl("cv", number = 10), tuneGrid = expand.grid(alpha = 0, lambda = 10^seq(-3, 3, length = 100)))
+
+predictions2_game2<-predict(ridge_game2, game2_test)
+RMSE(predictions2_game2, game2_test$Metacritic)
+
+```
+**elastic**
+
+```{r}
+
+set.seed(1)
+enet_game2<-train(Metacritic~.,data= game2_train, method = "glmnet", trControl = trainControl("cv", number = 10), tuneGrid = expand.grid(alpha = seq(0,1, length=10), lambda = 10^seq(-3, 3, length = 100)))
+
+predictions3_game2<-predict(enet_game2, game2_test)
+RMSE(predictions3_game2, game2_test$Metacritic)
+
+```
+
+
+**2. Tree method**
+
+
+**stepwise regression**
+
+
+```{r}
+
+set.seed(1)
+library(leaps)
+step.model_game2<-train(Metacritic~.,data = game2_train, method = "leapBackward",trControl = trainControl("cv", number = 10), tuneGrid= data.frame(nvmax = 1:7)) 
+
+prediction_s_game2<-predict(step.model_game2, game2_test)
+RMSE(prediction_s_game2, game2_test$Metacritic)
+
+```
+
+
+```{r}
+
+set.seed(1)
+library(leaps)
+step.model1_game2<-train(Metacritic~.,data = game2_train, method = "leapForward",trControl = trainControl("cv", number = 10), tuneGrid= data.frame(nvmax = 1:7)) 
+
+prediction_sw_game2<-predict(step.model1_game2, game2_test)
+RMSE(prediction_sw_game2, game2_test$Metacritic)
+
+```
+
+
+
+**regression tree**
+
+```{r}
+
+library(rpart)
+m.rpart_game2<-rpart(Metacritic~.,data = game2_train)
+p.rpart_game2<-predict(m.rpart_game2, game2_test)
+
+RMSE(p.rpart_game2, game2_test$Metacritic)
+
+```
+**random forest**
+
+```{r}
+set.seed(1)
+
+m_rf_game2<-train(Metacritic~., data = game2_train, method ="rf", metric = "RMSE", importance=T, trControl = trainControl(method="cv", number =10), tuneGrid = expand.grid(mtry=c(2,4,6)))
+
+predictions4_game2<-predict(m_rf_game2, game2_test)
+RMSE(predictions4_game2, game2_test$Metacritic)
+
+```
+
+
+
+**gradient boosting**
+
+```{r}
+
+set.seed(1)
+gbm_game2<-train(Metacritic~., data = game2_train, method ="gbm", metric = "RMSE" ,trControl = trainControl("cv", number = 10))
+
+predictions5_game2<-predict(gbm_game2, game2_test)
+RMSE(predictions5_game2, game2_test$Metacritic)
+
+```
+
+**svmlinear**
+
+```{r}
+
+set.seed(1)
+svmLiner_game2<-train(Metacritic~., data = game2_train, method ="svmLinear",trControl = trainControl("cv", number = 10))
+
+predictions6_game2<-predict(svmLiner_game2, game2_test)
+RMSE(predictions6_game2, game2_test$Metacritic)
+
+```
+**svmradial**
+
+```{r}
+
+set.seed(1)
+svmRadial_game2<-train(Metacritic~., data = game2_train, method ="svmRadial", trControl = trainControl("cv", number = 10))
+
+predictions7_game2<-predict(svmRadial_game2, game2_test)
+RMSE(predictions7_game2, game2_test$Metacritic)
+
+```
+
+**summary of model so far**
+
+```{r}
+set.seed(1)
+
+resamps_game2<-resamples(list(linear_game2, step.model_game2, step.model1_game2,lasso_game2, ridge_game2, enet_game2, m_rf_game2, gbm_game2, svmLiner_game2, svmRadial_game2) )
+
+summary(resamps_game2)
+
+```
+
+
+**Neural network**
+
+```{r}
+
+val.index<-createDataPartition(game2_train$Metacritic, p= 0.9, list=FALSE)
+game2_train1<-game2_train[val.index,]
+game2_val<-game2_train[-val.index,]
+
+game2_train1_m<-game2_train1
+game2_val_m<-game2_val
+
+
+game2_train1_m$Metacritic<-(game2_train1$Metacritic - min(game2_train1$Metacritic))/(max(game2_train1$Metacritic)- min(game2_train1$Metacritic))
+
+game2_val_m$Metacritic<-(game2_val$Metacritic - min(game2_train1$Metacritic))/(max(game2_train1$Metacritic)- min(game2_train1$Metacritic))
+
+```
+split the train dataset in to train and validation 
+
+```{r}
+nearZeroVar(game2_train1, saveMetrics = TRUE)
+```
+All variables are being used
+
+```{r}
+game2_train2<-game2_train1_m
+game2_val1<-game2_val_m
+game2_test1<-game2_test
+
+game2_train2[2:7]<-ifelse(game2_train2[2:7] == "TRUE",1,0)
+
+game2_val1[2:7]<-ifelse(game2_val1[2:7] == "TRUE" ,1,0)
+
+game2_test1[2:7]<-ifelse(game2_test1[2:7] == "TRUE" ,1,0)
+
+```
+
+
+```{r}
+library(keras)
+library(tfruns)
+df_train_game2<-as.matrix(subset(game2_train2, select=-c(Metacritic)))
+df_val_game2<-as.matrix(subset(game2_val1, select=-c(Metacritic)))
+runs_game2<-tuning_run("game2_tuning.R", 
+                 flags =list(
+                   nodes=c(64,128,392),
+            learning_rate=c(0.01,0.05,0.001),
+            batch_size=c(100,200,500,1000),
+            epochs=c(30,50,100),
+            activation=c("relu","sigmoid","tanh"),
+            activation1=c("relu","sigmoid","tanh"),
+            drop1=c(0.2,0.4,0.8),
+            drop2=c(0.2,0.4,0.8)),
+            sample =0.02
+       
+)
+```
+
+```{r}
+runs_game2
+view_run(runs_game2$run_dir[1])
+
+```
+```{r}
+total_train_game2<-rbind(game2_train2, game2_val1)
+total_train1_game2<-as.matrix(subset(total_train_game2, select=-c(Metacritic)))
+df_test_game2<-as.matrix(subset(game2_test1, select=-c(Metacritic)))
+
+model2_game2 = keras_model_sequential()
+model2_game2 %>%
+  layer_dense(units = 392, activation = 'relu') %>%
+  layer_dropout(0.4) %>%
+  layer_dense(units = 30, activation = 'sigmoid') %>%
+  layer_dense(0.2) %>%
+  layer_dense(units = 1, activation = 'linear')
+
+model2_game2 %>% compile(optimizer = 'adam', loss = 'mean_squared_error',metrics = c('mae'))
+
+set.seed(1)
+model2_game2 %>% fit(total_train1_game2, (total_train_game2$Metacritic), epochs = 30, batch_size=100, learning_rate = 0.001)
+```
+```{r}
+game_pred_game2<-model2_game2 %>% predict(df_test_game2)
+
+RMSE(((game_pred_game2*(max(game2_train1$Metacritic)- min(game2_train1$Metacritic)))+min(game2_train1$Metacritic)), game2_test1$Metacritic)
+
+```
